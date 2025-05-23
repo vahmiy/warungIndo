@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POS Web Sederhana - Admin</title>
+
+    <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>POS Web Sederhana - Admin</title>
+    <style>
+        /* CSS khusus untuk admin.html */
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .login-box {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            width: 300px;
+        }
+        .login-box h2 {
+            margin-bottom: 20px;
+            color: #0056b3;
+        }
+        .login-box input {
+            width: calc(100% - 20px);
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        .login-box button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+        .login-box button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div id="adminContent" style="display: none;">
+        <h1>Halaman Admin</h1>
+        <p>Selamat datang di panel admin! Di sini Anda bisa mengelola produk, diskon, dan melihat riwayat transaksi.</p>
+        </div>
+
+    <script>
+        const ADMIN_USERNAME = 'admin';
+        const ADMIN_PASSWORD = '12345';
+
+        function showLoginOverlay() {
+            const overlay = document.createElement('div');
+            overlay.classList.add('login-overlay');
+            overlay.innerHTML = `
+                <div class="login-box">
+                    <h2>Login Admin</h2>
+                    <input type="text" id="adminUsername" placeholder="Username" required>
+                    <input type="password" id="adminPassword" placeholder="Password" required>
+                    <button id="loginSubmitBtn">Login</button>
+                    <button id="cancelLoginBtn" style="background-color: #dc3545; margin-top: 10px;">Batal</button>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+
+            document.getElementById('loginSubmitBtn').addEventListener('click', () => {
+                const usernameInput = document.getElementById('adminUsername').value;
+                const passwordInput = document.getElementById('adminPassword').value;
+
+                if (usernameInput === ADMIN_USERNAME && passwordInput === ADMIN_PASSWORD) {
+                    overlay.remove(); // Hapus overlay
+                    document.getElementById('adminContent').style.display = 'block'; // Tampilkan konten admin
+                } else {
+                    alert('Username atau password salah! Silakan coba lagi.');
+                    document.getElementById('adminUsername').value = '';
+                    document.getElementById('adminPassword').value = '';
+                }
+            });
+
+            document.getElementById('cancelLoginBtn').addEventListener('click', () => {
+                window.location.href = 'index.html'; // Kembali ke halaman utama jika batal
+            });
+        }
+
+        // Jalankan saat halaman dimuat
+        document.addEventListener('DOMContentLoaded', () => {
+            // Kita tidak langsung menampilkan overlay di sini,
+            // karena proteksi utama akan dilakukan di server-side jika ada.
+            // Untuk proteksi client-side murni, kita akan menampilkan overlay.
+            // PENTING: Proteksi ini HANYA client-side. Untuk keamanan sejati,
+            // Anda perlu backend (Node.js, PHP, Python, dll.) dan sesi.
+
+            // Untuk aplikasi sederhana yang hanya client-side, kita bisa langsung tampilkan overlay.
+            // Jika ada server-side, server akan mengarahkan ke login atau langsung ke admin jika sudah login.
+            showLoginOverlay();
+        });
+    </script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f4;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 20px;
+            max-width: 1200px;
+            margin: 20px auto;
+        }
+        .container {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            width: 48%;
+            min-width: 320px;
+            box-sizing: border-box;
+        }
+        .container:last-child { /* Untuk riwayat transaksi yang lebih lebar */
+            width: 98%;
+        }
+        h1, h2, h3 {
+            color: #0056b3;
+            text-align: center;
+            margin-top: 0;
+        }
+        h3 {
+            margin-top: 20px;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 5px;
+        }
+        .product-item, .discount-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px dashed #eee;
+        }
+        .product-item:last-child, .discount-item:last-child {
+            border-bottom: none;
+        }
+        .product-info, .discount-info {
+            flex-grow: 1;
+        }
+        .product-info span, .discount-info strong {
+            font-weight: bold;
+        }
+        .product-item .action-buttons, .discount-item .action-buttons,
+        .transaction-item .action-buttons {
+            display: flex;
+            gap: 5px;
+            flex-shrink: 0;
+        }
+        .product-item .action-buttons button, .discount-item .action-buttons button,
+        .transaction-item .action-buttons button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85em;
+        }
+        .product-item .action-buttons button.delete-btn,
+        .discount-item .action-buttons button.delete-btn {
+            background-color: #dc3545;
+        }
+        .discount-item .action-buttons button.edit-btn {
+            background-color: #ffc107;
+            color: #333;
+        }
+        .transaction-item .action-buttons button.print-btn {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .product-item .action-buttons button:hover, .discount-item .action-buttons button:hover,
+        .transaction-item .action-buttons button:hover {
+            background-color: #218838;
+        }
+        .product-item .action-buttons button.delete-btn:hover,
+        .discount-item .action-buttons button.delete-btn:hover {
+            background-color: #c82333;
+        }
+        .discount-item .action-buttons button.edit-btn:hover {
+            background-color: #e0a800;
+        }
+        .transaction-item .action-buttons button.print-btn:hover {
+            background-color: #5a6268;
+        }
+
+        .input-group {
+            margin-bottom: 10px;
+            margin-top: 15px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .input-group input[type="text"],
+        .input-group input[type="number"],
+        .input-group select {
+            width: calc(100% - 20px);
+            padding: 8px 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1em;
+            box-sizing: border-box;
+        }
+        .action-button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1em;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .add-button {
+            background-color: #007bff;
+        }
+        .add-button:hover {
+            background-color: #0056b3;
+        }
+        .clear-data-button {
+            background-color: #dc3545;
+        }
+        .clear-data-button:hover {
+            background-color: #c82333;
+        }
+        #transactionHistory {
+            margin-top: 15px;
+            border-top: 1px solid #eee;
+            padding-top: 15px;
+        }
+        .transaction-item {
+            flex-direction: column;
+            align-items: flex-start;
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px dashed #eee;
+        }
+        .transaction-item .transaction-header {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        .transaction-item .transaction-header div {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            width: auto;
+        }
+        .transaction-item .transaction-header span {
+            font-size: 0.9em;
+            color: #666;
+        }
+        .transaction-item .transaction-header strong {
+            font-size: 1.1em;
+        }
+        .transaction-item .transaction-details {
+            width: 100%;
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            margin-top: 5px;
+            font-size: 0.95em;
+        }
+        .transaction-item .transaction-details span {
+            width: auto;
+            flex-grow: 1;
+            margin-bottom: 3px;
+        }
+        .transaction-item .transaction-details span:last-child {
+             text-align: right;
+        }
+        .transaction-items-list {
+            margin-left: 15px;
+            font-size: 0.85em;
+            color: #555;
+            width: 100%;
+            margin-top: 8px;
+        }
+        .customer-link {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .customer-link a {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .customer-link a:hover {
+            text-decoration: underline;
+        }
+
+        /* --- RESPONSIVE STYLES --- */
+        @media (max-width: 768px) {
+            body {
+                margin: 10px;
+                gap: 10px;
+                flex-direction: column;
+                align-items: center;
+            }
+            .container {
+                width: 95%;
+                min-width: unset;
+                padding: 15px;
+            }
+            .container:last-child {
+                width: 95%;
+            }
+            h2 {
+                font-size: 1.3em;
+            }
+            .product-item, .discount-item {
+                flex-direction: column;
+                align-items: flex-start;
+                font-size: 0.9em;
+                padding: 10px 0;
+            }
+            .product-item .action-buttons, .discount-item .action-buttons,
+            .transaction-item .action-buttons {
+                width: 100%;
+                margin-top: 8px;
+                justify-content: space-around;
+            }
+            .product-item .action-buttons button, .discount-item .action-buttons button,
+            .transaction-item .action-buttons button {
+                flex-grow: 1;
+                padding: 10px;
+                font-size: 0.9em;
+            }
+            .product-info, .discount-info {
+                width: 100%;
+                margin-bottom: 5px;
+            }
+            .input-group input[type="text"],
+            .input-group input[type="number"],
+            .input-group select {
+                width: calc(100% - 20px);
+            }
+            .action-button {
+                padding: 12px;
+                font-size: 1em;
+            }
+            .transaction-item .transaction-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .transaction-item .transaction-header div {
+                width: 100%;
+                flex-direction: row;
+                justify-content: space-between;
+            }
+            .transaction-item .transaction-header span {
+                text-align: right !important;
+                width: auto;
+                flex-grow: 1;
+            }
+            .transaction-item .transaction-details {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .transaction-item .transaction-details span {
+                width: 100%;
+                text-align: left !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                margin: 5px;
+                gap: 5px;
+            }
+            .container {
+                width: 98%;
+                padding: 10px;
+            }
+            h2 {
+                font-size: 1.2em;
+            }
+            .product-item, .discount-item, .transaction-item {
+                font-size: 0.85em;
+            }
+            .action-button {
+                padding: 10px;
+                font-size: 0.9em;
+            }
+        }
+
+        /* --- PRINT STYLES (A6 size approximate for small receipt) - DIKEMBALIKAN KE VERSI SEBELUMNYA --- */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .print-receipt-container {
+                visibility: visible;
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 58mm; /* Lebar kertas struk umum (58mm) */
+                font-family: 'Consolas', 'Courier New', monospace;
+                font-size: 10px; /* Ukuran font standar sebelumnya */
+                padding: 5mm; /* Padding standar sebelumnya */
+                box-sizing: border-box;
+                color: black;
+            }
+            .print-receipt-container h3, .print-receipt-container p {
+                text-align: center;
+                margin: 2px 0;
+            }
+            .print-receipt-container .header, .print-receipt-container .footer {
+                text-align: center;
+                margin-bottom: 5mm;
+            }
+            .print-receipt-container .receipt-items {
+                border-top: 1px dashed black;
+                border-bottom: 1px dashed black;
+                padding: 5mm 0;
+                margin: 5mm 0;
+            }
+            .print-receipt-container .receipt-item {
+                display: flex;
+                justify-content: space-between;
+                line-height: 1.2;
+            }
+            .print-receipt-container .receipt-item .item-qty-name {
+                flex-basis: 70%;
+            }
+            .print-receipt-container .receipt-item .item-total {
+                flex-basis: 30%;
+                text-align: right;
+            }
+            .print-receipt-container .summary-line {
+                display: flex;
+                justify-content: space-between;
+                font-weight: bold;
+                margin-top: 2px;
+            }
+            .print-receipt-container .summary-line.total {
+                font-size: 1.1em;
+                margin-top: 5px;
+            }
+            .print-receipt-container .thanks-message {
+                margin-top: 10mm;
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h2>Manajemen Diskon</h2>
+        <div class="input-group">
+            <label for="discountName">Nama Diskon:</label>
+            <input type="text" id="discountName" placeholder="Contoh: Diskon Liburan">
+        </div>
+        <div class="input-group">
+            <label for="discountType">Jenis Diskon:</label>
+            <select id="discountType">
+                <option value="percentage">Persentase (%)</option>
+                <option value="fixed">Nominal (Rp)</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label for="discountValue">Nilai Diskon:</label>
+            <input type="number" id="discountValue" placeholder="Contoh: 10 (untuk 10%) atau 5000 (untuk Rp 5000)" min="0">
+        </div>
+        <div class="input-group">
+            <label for="discountMinAmount">Minimal Belanja (Opsional, Rp):</label>
+            <input type="number" id="discountMinAmount" placeholder="Contoh: 70000" min="0">
+        </div>
+        <button id="addUpdateDiscountButton" class="action-button add-button">Tambah Diskon</button>
+        <button id="cancelEditDiscountButton" class="action-button clear-data-button" style="display:none;">Batal Edit</button>
+
+        <h3>Daftar Diskon Aktif</h3>
+        <div id="discountList">
+            <p>Belum ada diskon.</p>
+        </div>
+    </div>
+
+    <div class="container">
+        <h2>Manajemen Produk</h2>
+        <div class="input-group">
+            <label for="newProductName">Nama Produk Baru:</label>
+            <input type="text" id="newProductName" placeholder="Contoh: Kopi Latte">
+        </div>
+        <div class="input-group">
+            <label for="newProductPrice">Harga Produk Baru (Rp):</label>
+            <input type="number" id="newProductPrice" placeholder="Contoh: 30000" min="0">
+        </div>
+        <button id="addProductButton" class="action-button add-button">Tambah Produk</button>
+    </div>
+
+    <div class="container">
+        <h2>Daftar Produk Terdaftar</h2>
+        <div id="productList">
+            </div>
+    </div>
+
+    <div class="container" style="width: 95%;">
+        <h2>Riwayat Transaksi</h2>
+        <div id="transactionHistory">
+            <p>Belum ada transaksi.</p>
+        </div>
+        <button id="clearDataButton" class="action-button clear-data-button">Bersihkan Semua Data</button>
+    </div>
+
+    <div class="customer-link">
+        <p>Kembali ke <a href="index.html">Halaman Kasir (Customer)</a></p>
+    </div>
+
+    <script>
+        // --- DATA AWAL (jika localStorage kosong) ---
+        const initialProducts = [
+            { id: 'P001', name: 'Bala-Bala', price: 2500 },
+            { id: 'P002', name: 'Mendoan', price: 3000 },
+            { id: 'P003', name: 'Gehu Pedas', price: 3000 },
+            { id: 'P004', name: 'Kopi Panas', price: 5000 },
+            { id: 'P005', name: 'Es Coklat', price: 3000 }
+        ];
+
+        const initialDiscounts = [
+            { id: 'D001', name: 'Diskon Belanja Min 70rb (10%)', type: 'percentage', value: 0.10, min_amount: 70000 },
+            { id: 'D002', name: 'Diskon Tetap Rp 5.000 (Min 50rb)', type: 'fixed', value: 5000, min_amount: 50000 }
+        ];
+
+        let products = [];
+        let transactions = [];
+        let discounts = [];
+
+        let currentEditingDiscountId = null;
+
+        // --- ELEMEN HTML ---
+        const productListEl = document.getElementById('productList');
+        const transactionHistoryEl = document.getElementById('transactionHistory');
+        const clearDataButton = document.getElementById('clearDataButton');
+
+        const newProductNameEl = document.getElementById('newProductName');
+        const newProductPriceEl = document.getElementById('newProductPrice');
+        const addProductButton = document.getElementById('addProductButton');
+
+        const discountNameEl = document.getElementById('discountName');
+        const discountTypeEl = document.getElementById('discountType');
+        const discountValueEl = document.getElementById('discountValue');
+        const discountMinAmountEl = document.getElementById('discountMinAmount');
+        const addUpdateDiscountButton = document.getElementById('addUpdateDiscountButton');
+        const cancelEditDiscountButton = document.getElementById('cancelEditDiscountButton');
+        const discountListEl = document.getElementById('discountList');
+
+
+        // --- FUNGSI UTILITAS ---
+        function formatRupiah(number) {
+            return number.toLocaleString('id-ID');
+        }
+
+        function generateUniqueId(prefix = '') {
+            return prefix + Date.now() + '-' + Math.floor(Math.random() * 1000);
+        }
+
+        function loadDataFromLocalStorage() {
+            const storedProducts = localStorage.getItem('pos_products');
+            const storedTransactions = localStorage.getItem('pos_transactions');
+            const storedDiscounts = localStorage.getItem('pos_discounts');
+
+            if (storedProducts) {
+                products = JSON.parse(storedProducts);
+            } else {
+                products = initialProducts;
+                saveDataToLocalStorage();
+            }
+
+            if (storedTransactions) {
+                transactions = JSON.parse(storedTransactions);
+            }
+
+            if (storedDiscounts) {
+                discounts = JSON.parse(storedDiscounts);
+            } else {
+                discounts = initialDiscounts;
+                saveDataToLocalStorage();
+            }
+        }
+
+        function saveDataToLocalStorage() {
+            localStorage.setItem('pos_products', JSON.stringify(products));
+            localStorage.setItem('pos_transactions', JSON.stringify(transactions));
+            localStorage.setItem('pos_discounts', JSON.stringify(discounts));
+        }
+
+        // --- FUNGSI UTAMA APLIKASI (ADMIN) ---
+
+        function renderProducts() {
+            productListEl.innerHTML = '';
+            if (products.length === 0) {
+                productListEl.innerHTML = '<p>Belum ada produk.</p>';
+                return;
+            }
+            products.forEach(product => {
+                const productItem = document.createElement('div');
+                productItem.classList.add('product-item');
+                productItem.innerHTML = `
+                    <div class="product-info">
+                        <span>${product.name}</span> <br>
+                        Rp ${formatRupiah(product.price)}
+                    </div>
+                    <div class="action-buttons">
+                        <button class="delete-btn" data-id="${product.id}">Hapus</button>
+                    </div>
+                `;
+                productListEl.appendChild(productItem);
+            });
+
+            productListEl.querySelectorAll('.delete-btn').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    deleteProduct(event.target.dataset.id);
+                });
+            });
+        }
+
+        function renderTransactionHistory() {
+            transactionHistoryEl.innerHTML = '';
+            if (transactions.length === 0) {
+                transactionHistoryEl.innerHTML = '<p>Belum ada transaksi.</p>';
+                return;
+            }
+            transactions.forEach(trx => {
+                const trxItemEl = document.createElement('div');
+                trxItemEl.classList.add('transaction-item');
+                trxItemEl.innerHTML = `
+                    <div class="transaction-header">
+                        <div>
+                            <strong>TRX ID: ${trx.id}</strong>
+                            <span>${trx.date}</span>
+                        </div>
+                        <div class="action-buttons">
+                            <button class="print-btn" data-id="${trx.id}">Cetak Struk</button>
+                        </div>
+                    </div>
+                    <div class="transaction-details">
+                        <span>Pelanggan: ${trx.customerName}</span>
+                        <span>Subtotal: Rp ${formatRupiah(trx.subtotal)}</span>
+                        <span>Total: Rp ${formatRupiah(trx.total)}</span>
+                    </div>
+                    <div class="transaction-items-list">
+                        <strong>Item:</strong>
+                        <ul>
+                            ${trx.items.map(item => `<li>${item.name} (${item.quantity}x) - Rp ${formatRupiah(item.price * item.quantity)}</li>`).join('')}
+                        </ul>
+                        ${trx.discount > 0 ? `<p>Diskon (${trx.discountName || 'N/A'}): Rp ${formatRupiah(trx.discount)}</p>` : ''}
+                    </div>
+                `;
+                transactionHistoryEl.appendChild(trxItemEl);
+            });
+
+            transactionHistoryEl.querySelectorAll('.print-btn').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    printTransactionReceipt(event.target.dataset.id);
+                });
+            });
+        }
+
+        function addProduct() {
+            const name = newProductNameEl.value.trim();
+            const price = parseFloat(newProductPriceEl.value);
+
+            if (!name) {
+                alert('Nama produk tidak boleh kosong.');
+                return;
+            }
+            if (isNaN(price) || price <= 0) {
+                alert('Harga produk harus angka positif.');
+                return;
+            }
+
+            const newProduct = {
+                id: generateUniqueId('PROD-'),
+                name: name,
+                price: price
+            };
+
+            products.push(newProduct);
+            saveDataToLocalStorage();
+            renderProducts();
+            newProductNameEl.value = '';
+            newProductPriceEl.value = '';
+            alert(`Produk "${name}" berhasil ditambahkan!`);
+        }
+
+        function deleteProduct(productId) {
+            if (!confirm('Anda yakin ingin menghapus produk ini? Semua item di keranjang yang terkait dengan produk ini juga akan dihapus.')) {
+                return;
+            }
+
+            products = products.filter(p => p.id !== productId);
+            // Tidak perlu update shoppingCart di sini karena ini halaman admin.
+            // ShoppingCart akan di-refresh di halaman customer saat dimuat ulang.
+
+            saveDataToLocalStorage();
+            renderProducts();
+            alert('Produk berhasil dihapus!');
+        }
+
+        // --- FUNGSI UNTUK MANAJEMEN DISKON ---
+
+        function renderDiscounts() {
+            discountListEl.innerHTML = '';
+            if (discounts.length === 0) {
+                discountListEl.innerHTML = '<p>Belum ada diskon.</p>';
+                return;
+            }
+            discounts.forEach(disc => {
+                const discItemEl = document.createElement('div');
+                discItemEl.classList.add('discount-item');
+                let displayValue = '';
+                if (disc.type === 'percentage') {
+                    displayValue = `${disc.value * 100}%`;
+                } else if (disc.type === 'fixed') {
+                    displayValue = `Rp ${formatRupiah(disc.value)}`;
+                }
+                const minAmountText = disc.min_amount && disc.min_amount > 0 ? ` (Min. Rp ${formatRupiah(disc.min_amount)})` : '';
+
+                discItemEl.innerHTML = `
+                    <div class="discount-info">
+                        <strong>${disc.name}</strong><br>
+                        <span>${displayValue}${minAmountText}</span>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="edit-btn" data-id="${disc.id}">Edit</button>
+                        <button class="delete-btn" data-id="${disc.id}">Hapus</button>
+                    </div>
+                `;
+                discountListEl.appendChild(discItemEl);
+            });
+
+            discountListEl.querySelectorAll('.edit-btn').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    editDiscount(event.target.dataset.id);
+                });
+            });
+            discountListEl.querySelectorAll('.delete-btn').forEach(button => {
+                button.addEventListener('click', (event) => {
+                    deleteDiscountRule(event.target.dataset.id);
+                });
+            });
+        }
+
+        function addUpdateDiscount() {
+            const name = discountNameEl.value.trim();
+            const type = discountTypeEl.value;
+            let value = parseFloat(discountValueEl.value);
+            let min_amount = parseFloat(discountMinAmountEl.value);
+
+            if (!name) {
+                alert('Nama diskon tidak boleh kosong.');
+                return;
+            }
+            if (isNaN(value) || value <= 0) {
+                alert('Nilai diskon harus angka positif.');
+                return;
+            }
+            if (type === 'percentage' && value > 100) {
+                 alert('Nilai persentase tidak boleh lebih dari 100.');
+                 return;
+            }
+            if (type === 'percentage') {
+                value = value / 100;
+            }
+
+            if (isNaN(min_amount) || min_amount < 0) {
+                min_amount = 0;
+            }
+
+            if (currentEditingDiscountId) {
+                const index = discounts.findIndex(d => d.id === currentEditingDiscountId);
+                if (index > -1) {
+                    discounts[index] = { id: currentEditingDiscountId, name, type, value, min_amount };
+                    alert(`Diskon "${name}" berhasil diperbarui!`);
+                }
+                currentEditingDiscountId = null;
+                addUpdateDiscountButton.textContent = 'Tambah Diskon';
+                cancelEditDiscountButton.style.display = 'none';
+            } else {
+                const newDiscount = {
+                    id: generateUniqueId('DISC-'),
+                    name, type, value, min_amount
+                };
+                discounts.push(newDiscount);
+                alert(`Diskon "${name}" berhasil ditambahkan!`);
+            }
+
+            saveDataToLocalStorage();
+            renderDiscounts();
+            discountNameEl.value = '';
+            discountTypeEl.value = 'percentage';
+            discountValueEl.value = '';
+            discountMinAmountEl.value = '';
+        }
+
+        function editDiscount(discountId) {
+            const disc = discounts.find(d => d.id === discountId);
+            if (!disc) {
+                alert('Diskon tidak ditemukan!');
+                return;
+            }
+
+            discountNameEl.value = disc.name;
+            discountTypeEl.value = disc.type;
+            discountValueEl.value = disc.type === 'percentage' ? disc.value * 100 : disc.value;
+            discountMinAmountEl.value = disc.min_amount || '';
+
+            currentEditingDiscountId = discountId;
+            addUpdateDiscountButton.textContent = 'Simpan Perubahan Diskon';
+            cancelEditDiscountButton.style.display = 'block';
+        }
+
+        function cancelEditDiscount() {
+            currentEditingDiscountId = null;
+            addUpdateDiscountButton.textContent = 'Tambah Diskon';
+            cancelEditDiscountButton.style.display = 'none';
+            discountNameEl.value = '';
+            discountTypeEl.value = 'percentage';
+            discountValueEl.value = '';
+            discountMinAmountEl.value = '';
+        }
+
+        function deleteDiscountRule(discountId) {
+            if (!confirm('Anda yakin ingin menghapus aturan diskon ini?')) {
+                return;
+            }
+            discounts = discounts.filter(d => d.id !== discountId);
+            saveDataToLocalStorage();
+            renderDiscounts();
+            alert('Aturan diskon berhasil dihapus!');
+            if (currentEditingDiscountId === discountId) {
+                cancelEditDiscount();
+            }
+        }
+
+        // --- FUNGSI PRINT STRUK TRANSAKSI ---
+        function printTransactionReceipt(trxId) {
+            const transaction = transactions.find(t => t.id === trxId);
+
+            if (!transaction) {
+                alert('Transaksi tidak ditemukan untuk dicetak!');
+                return;
+            }
+
+            const receiptContent = generatePrintReceiptContent(transaction);
+
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(receiptContent);
+            printWindow.document.close();
+            printWindow.focus();
+            printWindow.print();
+        }
+
+        function generatePrintReceiptContent(transaction) {
+            let itemsHtml = '';
+            transaction.items.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                itemsHtml += `
+                    <div class="receipt-item">
+                        <span class="item-qty-name">${item.quantity}x ${item.name}</span>
+                        <span class="item-total">Rp ${formatRupiah(itemTotal)}</span>
+                    </div>
+                `;
+            });
+
+            let discountLine = '';
+            if (transaction.discount > 0) {
+                discountLine = `
+                    <div class="summary-line">
+                        <span>Diskon (${transaction.discountName || 'N/A'}):</span>
+                        <span>- Rp ${formatRupiah(transaction.discount)}</span>
+                    </div>
+                `;
+            }
+
+            return `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Struk Transaksi - ${transaction.id}</title>
+                    <style>
+                        /* Inline styles for print to ensure they are applied */
+                        body { margin: 0; padding: 0; }
+                        .print-receipt-container {
+                            width: 58mm; /* Lebar kertas struk umum */
+                            font-family: 'Consolas', 'Courier New', monospace;
+                            font-size: 10px;
+                            padding: 5mm;
+                            box-sizing: border-box;
+                            color: black;
+                            line-height: 1.4;
+                        }
+                        .print-receipt-container h3, .print-receipt-container p {
+                            text-align: center;
+                            margin: 2px 0;
+                        }
+                        .print-receipt-container .header, .print-receipt-container .footer {
+                            text-align: center;
+                            margin-bottom: 5mm;
+                        }
+                        .print-receipt-container .receipt-items {
+                            border-top: 1px dashed black;
+                            border-bottom: 1px dashed black;
+                            padding: 5mm 0;
+                            margin: 5mm 0;
+                        }
+                        .print-receipt-container .receipt-item {
+                            display: flex;
+                            justify-content: space-between;
+                            line-height: 1.2;
+                        }
+                        .print-receipt-container .receipt-item .item-qty-name {
+                            flex-basis: 70%;
+                            word-wrap: break-word; /* Wrap long item names */
+                        }
+                        .print-receipt-container .receipt-item .item-total {
+                            flex-basis: 30%;
+                            text-align: right;
+                        }
+                        .print-receipt-container .summary-line {
+                            display: flex;
+                            justify-content: space-between;
+                            font-weight: bold;
+                            margin-top: 2px;
+                        }
+                        .print-receipt-container .summary-line.total {
+                            font-size: 1.1em;
+                            margin-top: 5px;
+                        }
+                        .print-receipt-container .thanks-message {
+                            margin-top: 10mm;
+                            font-size: 0.9em;
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="print-receipt-container">
+                        <div class="header">
+                            <h3>TOKO KAMI</h3>
+                            <p>Jl. Contoh No. 123, Kota Contoh</p>
+                            <p>Telp: 0812-3456-7890</p>
+                        </div>
+
+                        <p>TRX ID: ${transaction.id}</p>
+                        <p>Tanggal: ${transaction.date}</p>
+                        <p>Pelanggan: ${transaction.customerName}</p>
+                        <br>
+
+                        <div class="receipt-items">
+                            ${itemsHtml}
+                        </div>
+
+                        <div class="summary-line">
+                            <span>Subtotal:</span>
+                            <span>Rp ${formatRupiah(transaction.subtotal)}</span>
+                        </div>
+                        ${discountLine}
+                        <div class="summary-line total">
+                            <span>TOTAL:</span>
+                            <span>Rp ${formatRupiah(transaction.total)}</span>
+                        </div>
+
+                        <div class="footer">
+                            <p class="thanks-message">Terima kasih sudah berbelanja!</p>
+                        </div>
+                    </div>
+                </body>
+                </html>
+            `;
+        }
+
+        // Fungsi untuk membersihkan semua data dari localStorage
+        function clearAllData() {
+            if (confirm("Anda yakin ingin menghapus SEMUA data produk, diskon, dan riwayat transaksi? Aksi ini tidak dapat dibatalkan!")) {
+                localStorage.removeItem('pos_products');
+                localStorage.removeItem('pos_transactions');
+                localStorage.removeItem('pos_discounts');
+                products = JSON.parse(JSON.stringify(initialProducts));
+                discounts = JSON.parse(JSON.stringify(initialDiscounts));
+                transactions = [];
+                renderProducts();
+                renderTransactionHistory();
+                renderDiscounts();
+                alert("Semua data berhasil dihapus dan direset ke data awal.");
+            }
+        }
+
+        // --- INISIALISASI (saat halaman dimuat) ---
+        document.addEventListener('DOMContentLoaded', () => {
+            loadDataFromLocalStorage();
+            renderProducts();
+            renderTransactionHistory();
+            renderDiscounts();
+
+            clearDataButton.addEventListener('click', clearAllData);
+            addProductButton.addEventListener('click', addProduct);
+            addUpdateDiscountButton.addEventListener('click', addUpdateDiscount);
+            cancelEditDiscountButton.addEventListener('click', cancelEditDiscount);
+        });
+    </script>
+</body>
+</html>
