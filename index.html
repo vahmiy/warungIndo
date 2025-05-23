@@ -128,7 +128,7 @@
             text-decoration: underline;
         }
 
-      
+        /* Responsive Styles */
         @media (max-width: 768px) {
             body {
                 margin: 10px;
@@ -448,21 +448,9 @@
             alert(`Transaksi berhasil! Total: Rp ${formatRupiah(finalTotal)}.`);
         }
 
-        function authenticateAdmin() {
-            const correctUsername = 'admin';
-            const correctPassword = '12345';
-
-            const username = prompt('Masukkan username admin:');
-            if (username === null) return;
-
-            const password = prompt('Masukkan password admin:');
-            if (password === null) return;
-
-            if (username === correctUsername && password === correctPassword) {
-                window.location.href = 'admin.html';
-            } else {
-                alert('Username atau password salah!');
-            }
+        // FUNGSI INI DIUBAH!
+        function navigateToAdmin() {
+            window.location.href = 'admin.html'; // Langsung arahkan ke admin.html
         }
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -470,9 +458,11 @@
             renderProducts();
             renderCart();
             checkoutButton.addEventListener('click', checkout);
+            
+            // Event listener diubah untuk memanggil navigateToAdmin
             adminLoginLink.addEventListener('click', (event) => {
                 event.preventDefault();
-                authenticateAdmin();
+                navigateToAdmin(); // Panggil fungsi baru ini
             });
         });
     </script>
