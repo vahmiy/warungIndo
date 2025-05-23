@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>POS Web Sederhana - Kasir</title>
+    <title>Warung Indo - Kasir</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -22,7 +22,7 @@
             padding: 20px;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            width: 48%; /* Mengatur lebar kontainer */
+            width: 48%;
             min-width: 320px;
             box-sizing: border-box;
         }
@@ -128,16 +128,16 @@
             text-decoration: underline;
         }
 
-        /* --- RESPONSIVE STYLES --- */
+      
         @media (max-width: 768px) {
             body {
                 margin: 10px;
                 gap: 10px;
-                flex-direction: column; /* Ubah ke kolom pada layar kecil */
+                flex-direction: column;
                 align-items: center;
             }
             .container {
-                width: 95%; /* Lebih lebar pada layar kecil */
+                width: 95%;
                 min-width: unset;
                 padding: 15px;
             }
@@ -145,7 +145,7 @@
                 font-size: 1.3em;
             }
             .product-item, .cart-item {
-                flex-direction: column; /* Ubah item menjadi kolom juga */
+                flex-direction: column;
                 align-items: flex-start;
                 font-size: 0.9em;
                 padding: 10px 0;
@@ -226,7 +226,6 @@
     </div>
 
     <script>
-        // --- DATA AWAL (jika localStorage kosong) ---
         const initialProducts = [
             { id: 'P001', name: 'Bala-Bala', price: 2500 },
             { id: 'P002', name: 'Mendoan', price: 3000 },
@@ -245,7 +244,6 @@
         let transactions = [];
         let discounts = [];
 
-        // --- ELEMEN HTML ---
         const productListEl = document.getElementById('productList');
         const cartListEl = document.getElementById('cartList');
         const cartTotalEl = document.getElementById('cartTotal');
@@ -253,7 +251,6 @@
         const checkoutButton = document.getElementById('checkoutButton');
         const adminLoginLink = document.getElementById('adminLoginLink');
 
-        // --- FUNGSI UTILITAS ---
         function formatRupiah(number) {
             return number.toLocaleString('id-ID');
         }
@@ -267,14 +264,12 @@
                 products = JSON.parse(storedProducts);
             } else {
                 products = initialProducts;
-                // Simpan data awal jika belum ada agar konsisten
                 localStorage.setItem('pos_products', JSON.stringify(products));
             }
 
             if (storedTransactions) {
                 transactions = JSON.parse(storedTransactions);
             } else {
-                 // Inisialisasi transactions jika belum ada
                 localStorage.setItem('pos_transactions', JSON.stringify(transactions));
             }
 
@@ -282,7 +277,6 @@
                 discounts = JSON.parse(storedDiscounts);
             } else {
                 discounts = initialDiscounts;
-                // Simpan data awal jika belum ada agar konsisten
                 localStorage.setItem('pos_discounts', JSON.stringify(discounts));
             }
         }
@@ -292,8 +286,6 @@
             localStorage.setItem('pos_transactions', JSON.stringify(transactions));
             localStorage.setItem('pos_discounts', JSON.stringify(discounts));
         }
-
-        // --- FUNGSI UTAMA APLIKASI (CUSTOMER) ---
 
         function renderProducts() {
             productListEl.innerHTML = '';
@@ -391,7 +383,7 @@
             discounts.forEach(disc => {
                 let currentDiscountAmount = 0;
                 if (disc.min_amount && subtotal < disc.min_amount) {
-                    return; // Lewati diskon ini jika minimum pembelian tidak tercapai
+                    return;
                 }
 
                 if (disc.type === 'percentage') {
@@ -400,7 +392,6 @@
                     currentDiscountAmount = disc.value;
                 }
 
-                // Pilih diskon terbaik (yang memberikan potongan terbesar)
                 if (currentDiscountAmount > bestDiscount.amount) {
                     bestDiscount.amount = currentDiscountAmount;
                     bestDiscount.name = disc.name;
@@ -420,17 +411,17 @@
             const customerName = customerNameEl.value.trim();
 
             const transaction = {
-                id: 'TRX-' + Date.now(), // Generate unique ID
+                id: 'TRX-' + Date.now(),
                 date: new Date().toLocaleString(),
                 customerName: customerName === '' ? 'Umum' : customerName,
-                items: JSON.parse(JSON.stringify(shoppingCart)), // Clone cart items
+                items: JSON.parse(JSON.stringify(shoppingCart)),
                 subtotal: subtotal,
                 discount: discountAmount,
                 discountName: appliedDiscountName,
                 total: finalTotal
             };
-            transactions.unshift(transaction); // Add to the beginning of the array
-            saveDataToLocalStorage(); // Simpan transaksi yang diperbarui
+            transactions.unshift(transaction);
+            saveDataToLocalStorage();
 
             console.log("\n========== STRUK PEMBELIAN ==========");
             console.log("ID Transaksi: " + transaction.id);
@@ -451,40 +442,36 @@
             console.log("Terima kasih sudah berbelanja!");
             console.log("=====================================\n");
 
-            shoppingCart = []; // Clear cart after checkout
-            customerNameEl.value = ''; // Clear customer name
-            renderCart(); // Perbarui tampilan keranjang
+            shoppingCart = [];
+            customerNameEl.value = '';
+            renderCart();
             alert(`Transaksi berhasil! Total: Rp ${formatRupiah(finalTotal)}.`);
         }
 
-        // --- FUNGSI PROTEKSI PASSWORD (untuk admin.html) ---
         function authenticateAdmin() {
             const correctUsername = 'admin';
             const correctPassword = '12345';
 
             const username = prompt('Masukkan username admin:');
-            if (username === null) return; // Pengguna membatalkan
+            if (username === null) return;
 
             const password = prompt('Masukkan password admin:');
-            if (password === null) return; // Pengguna membatalkan
+            if (password === null) return;
 
             if (username === correctUsername && password === correctPassword) {
-                window.location.href = 'admin.html'; // Arahkan ke halaman admin
+                window.location.href = 'admin.html';
             } else {
                 alert('Username atau password salah!');
             }
         }
 
-        // --- INISIALISASI (saat halaman dimuat) ---
         document.addEventListener('DOMContentLoaded', () => {
             loadDataFromLocalStorage();
             renderProducts();
             renderCart();
             checkoutButton.addEventListener('click', checkout);
-
-            // Tambahkan event listener untuk link admin
             adminLoginLink.addEventListener('click', (event) => {
-                event.preventDefault(); // Mencegah navigasi default
+                event.preventDefault();
                 authenticateAdmin();
             });
         });

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>POS Web Sederhana - Admin</title>
+    <title>Warung Indo - Admin</title>
 
     <!DOCTYPE html>
 <html lang="en">
@@ -12,7 +12,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>POS Web Sederhana - Admin</title>
     <style>
-        /* CSS khusus untuk admin.html */
+        
         body { font-family: Arial, sans-serif; margin: 20px; }
         .login-overlay {
             position: fixed;
@@ -88,8 +88,8 @@
                 const passwordInput = document.getElementById('adminPassword').value;
 
                 if (usernameInput === ADMIN_USERNAME && passwordInput === ADMIN_PASSWORD) {
-                    overlay.remove(); // Hapus overlay
-                    document.getElementById('adminContent').style.display = 'block'; // Tampilkan konten admin
+                    overlay.remove(); 
+                    document.getElementById('adminContent').style.display = 'block'; 
                 } else {
                     alert('Username atau password salah! Silakan coba lagi.');
                     document.getElementById('adminUsername').value = '';
@@ -98,20 +98,11 @@
             });
 
             document.getElementById('cancelLoginBtn').addEventListener('click', () => {
-                window.location.href = 'index.html'; // Kembali ke halaman utama jika batal
+                window.location.href = 'index.html'; 
             });
         }
-
-        // Jalankan saat halaman dimuat
+        
         document.addEventListener('DOMContentLoaded', () => {
-            // Kita tidak langsung menampilkan overlay di sini,
-            // karena proteksi utama akan dilakukan di server-side jika ada.
-            // Untuk proteksi client-side murni, kita akan menampilkan overlay.
-            // PENTING: Proteksi ini HANYA client-side. Untuk keamanan sejati,
-            // Anda perlu backend (Node.js, PHP, Python, dll.) dan sesi.
-
-            // Untuk aplikasi sederhana yang hanya client-side, kita bisa langsung tampilkan overlay.
-            // Jika ada server-side, server akan mengarahkan ke login atau langsung ke admin jika sudah login.
             showLoginOverlay();
         });
     </script>
@@ -138,7 +129,7 @@
             min-width: 320px;
             box-sizing: border-box;
         }
-        .container:last-child { /* Untuk riwayat transaksi yang lebih lebar */
+        .container:last-child { 
             width: 98%;
         }
         h1, h2, h3 {
@@ -324,7 +315,7 @@
             text-decoration: underline;
         }
 
-        /* --- RESPONSIVE STYLES --- */
+
         @media (max-width: 768px) {
             body {
                 margin: 10px;
@@ -419,7 +410,6 @@
             }
         }
 
-        /* --- PRINT STYLES (A6 size approximate for small receipt) - DIKEMBALIKAN KE VERSI SEBELUMNYA --- */
         @media print {
             body * {
                 visibility: hidden;
@@ -429,10 +419,10 @@
                 position: absolute;
                 left: 0;
                 top: 0;
-                width: 58mm; /* Lebar kertas struk umum (58mm) */
+                width: 58mm;
                 font-family: 'Consolas', 'Courier New', monospace;
-                font-size: 10px; /* Ukuran font standar sebelumnya */
-                padding: 5mm; /* Padding standar sebelumnya */
+                font-size: 10px;
+                padding: 5mm;
                 box-sizing: border-box;
                 color: black;
             }
@@ -543,7 +533,6 @@
     </div>
 
     <script>
-        // --- DATA AWAL (jika localStorage kosong) ---
         const initialProducts = [
             { id: 'P001', name: 'Bala-Bala', price: 2500 },
             { id: 'P002', name: 'Mendoan', price: 3000 },
@@ -563,7 +552,6 @@
 
         let currentEditingDiscountId = null;
 
-        // --- ELEMEN HTML ---
         const productListEl = document.getElementById('productList');
         const transactionHistoryEl = document.getElementById('transactionHistory');
         const clearDataButton = document.getElementById('clearDataButton');
@@ -580,8 +568,6 @@
         const cancelEditDiscountButton = document.getElementById('cancelEditDiscountButton');
         const discountListEl = document.getElementById('discountList');
 
-
-        // --- FUNGSI UTILITAS ---
         function formatRupiah(number) {
             return number.toLocaleString('id-ID');
         }
@@ -619,8 +605,6 @@
             localStorage.setItem('pos_transactions', JSON.stringify(transactions));
             localStorage.setItem('pos_discounts', JSON.stringify(discounts));
         }
-
-        // --- FUNGSI UTAMA APLIKASI (ADMIN) ---
 
         function renderProducts() {
             productListEl.innerHTML = '';
@@ -725,15 +709,12 @@
             }
 
             products = products.filter(p => p.id !== productId);
-            // Tidak perlu update shoppingCart di sini karena ini halaman admin.
-            // ShoppingCart akan di-refresh di halaman customer saat dimuat ulang.
 
             saveDataToLocalStorage();
             renderProducts();
             alert('Produk berhasil dihapus!');
         }
 
-        // --- FUNGSI UNTUK MANAJEMEN DISKON ---
 
         function renderDiscounts() {
             discountListEl.innerHTML = '';
@@ -869,7 +850,6 @@
             }
         }
 
-        // --- FUNGSI PRINT STRUK TRANSAKSI ---
         function printTransactionReceipt(trxId) {
             const transaction = transactions.find(t => t.id === trxId);
 
@@ -1005,7 +985,6 @@
             `;
         }
 
-        // Fungsi untuk membersihkan semua data dari localStorage
         function clearAllData() {
             if (confirm("Anda yakin ingin menghapus SEMUA data produk, diskon, dan riwayat transaksi? Aksi ini tidak dapat dibatalkan!")) {
                 localStorage.removeItem('pos_products');
@@ -1021,7 +1000,6 @@
             }
         }
 
-        // --- INISIALISASI (saat halaman dimuat) ---
         document.addEventListener('DOMContentLoaded', () => {
             loadDataFromLocalStorage();
             renderProducts();
