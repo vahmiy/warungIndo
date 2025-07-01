@@ -1,5 +1,3 @@
-Tentu! Ini draf deskripsi aplikasi Anda untuk file README.md. Saya akan mencoba membuatnya informatif dan menarik. Anda bisa menyesuaikannya jika ada detail yang ingin ditambahkan atau diubah.
-
 Warung Indo - Aplikasi Point of Sale (POS) Sederhana
 Gambar di atas adalah contoh tampilan antarmuka utama aplikasi.
 
